@@ -15,7 +15,7 @@ import com.tarjetas.ios.demo.enums.TipoTarjeta;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Setter; 
 
 @Entity
 @Setter
