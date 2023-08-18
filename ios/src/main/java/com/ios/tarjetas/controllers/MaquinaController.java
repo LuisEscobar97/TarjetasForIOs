@@ -20,9 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ios.tarjetas.entities.Area;
+import com.ios.tarjetas.entities.Linea;
 import com.ios.tarjetas.entities.Maquina;
 import com.ios.tarjetas.entities.Tarjeta;
 import com.ios.tarjetas.exceptions.BadRequestException;
+import com.ios.tarjetas.services.LineaDAO;
 import com.ios.tarjetas.services.MaquinaDAO;
 import com.ios.tarjetas.utils.TarjetasUtils;
 
@@ -32,6 +35,9 @@ public class MaquinaController {
 	
 	@Autowired
 	private MaquinaDAO maquinaDAO;
+	
+	@Autowired
+	private LineaDAO lineaDAO;
 	
 	@GetMapping("/get")
 	public ResponseEntity<?> getMaquinaByID(@RequestParam(name="id")Integer id){
@@ -83,6 +89,20 @@ public class MaquinaController {
 		
 	}
 	
-	
+	@GetMapping("/setLinea")
+	public ResponseEntity<?> agregarLineaAArea(@RequestParam(name = "idLinea") Integer idLinea,
+			@RequestParam(name = "idMaquina") Integer idMaquina) {
+		Optional<Linea> lineaObtenida = lineaDAO.buscarPorID(idLinea);
+		if (!lineaObtenida.isPresent())
+			throw new BadRequestException(String.format("El tarjeta con ID: %d no existe", idLinea));
+
+		Optional<Maquina> maquinaObteneida = maquinaDAO.buscarPorID(idMaquina);
+		if (!maquinaObteneida.isPresent())
+			throw new BadRequestException(String.format("El tarjeta con ID: %d no existe", idMaquina));
+		
+		Maquina maquinaMod= maquinaDAO.asociarMaquinaLinea(maquinaObteneida.get(), lineaObtenida.get());
+		
+		return new ResponseEntity<Maquina>(maquinaMod,HttpStatus.OK);
+	}
 
 }

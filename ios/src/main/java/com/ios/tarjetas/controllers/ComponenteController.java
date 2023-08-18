@@ -18,8 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ios.tarjetas.entities.Componente;
+import com.ios.tarjetas.entities.Linea;
+import com.ios.tarjetas.entities.Maquina;
 import com.ios.tarjetas.exceptions.BadRequestException;
 import com.ios.tarjetas.services.ComponenteDAO;
+import com.ios.tarjetas.services.MaquinaDAO;
 import com.ios.tarjetas.utils.TarjetasUtils;
 
 @RestController
@@ -27,6 +30,9 @@ import com.ios.tarjetas.utils.TarjetasUtils;
 public class ComponenteController {
 	@Autowired
 	private ComponenteDAO componenteDAO;
+	
+	@Autowired
+	private MaquinaDAO maquinaDAO;
 
 	@GetMapping("/get")
 	public ResponseEntity<?> getComponenteById(@RequestParam(name = "id") Integer id) {
@@ -69,6 +75,22 @@ public class ComponenteController {
 		componenteDAO.eliminarPorId(id);
 
 		return new ResponseEntity<Componente>(compoObtenido.get(), HttpStatus.OK);
+	}
+	
+	@GetMapping("/setMaquina")
+	public ResponseEntity<?> agregarMaquinaAComponente(@RequestParam(name = "idMaquina") Integer idMaquina,
+			@RequestParam(name = "idComponente") Integer idComponente) {
+		Optional<Maquina> maquinaObtenida = maquinaDAO.buscarPorID(idMaquina);
+		if (!maquinaObtenida.isPresent())
+			throw new BadRequestException(String.format("El tarjeta con ID: %d no existe", idMaquina));
+
+		Optional<Componente> componenteObteneida = componenteDAO.buscarPorID(idComponente);
+		if (!componenteObteneida.isPresent())
+			throw new BadRequestException(String.format("El tarjeta con ID: %d no existe", idComponente));
+		
+		Componente componenteMod= componenteDAO.asociarComponenteMaquina(componenteObteneida.get(), maquinaObtenida.get());
+		
+		return new ResponseEntity<Componente>(componenteMod,HttpStatus.OK);
 	}
 
 }
